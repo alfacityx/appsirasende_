@@ -199,20 +199,10 @@ class _SelectedServicesScreenState extends State<SelectedServicesScreen> {
     }
   }
 
-  double _calculateTotalPrice() {
-    double total = 0.0;
-    for (var service in _services) {
-      double price = _parsePrice(service['price'] ?? '0');
-      int quantity = service['quantity'] as int;
-      total += price * quantity;
-    }
-    return total;
-  }
+
 
   @override
   Widget build(BuildContext context) {
-    final totalPrice = _calculateTotalPrice();
-    
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -364,49 +354,49 @@ class _SelectedServicesScreenState extends State<SelectedServicesScreen> {
                 const SizedBox(height: 16),
                 
                 if (_services.isEmpty)
-                  Expanded(
+                Expanded(
                     child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
                             Icons.content_cut,
-                            size: 64,
-                            color: Colors.grey[400],
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'No services selected',
-                            style: AppTypography.titleMedium.copyWith(
-                              color: Colors.grey[500],
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Go back to select services',
-                            style: AppTypography.bodyMedium.copyWith(
+                              size: 64,
                               color: Colors.grey[400],
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 16),
+                            Text(
+                              'No services selected',
+                              style: AppTypography.titleMedium.copyWith(
+                              color: Colors.grey[500],
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Go back to select services',
+                              style: AppTypography.bodyMedium.copyWith(
+                              color: Colors.grey[400],
+                              ),
+                            ),
+                          ],
                       ),
-                    ),
-                  )
+                        ),
+                      )
                 else
                   Expanded(
                     child: ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      itemCount: _services.length,
-                      itemBuilder: (context, index) {
-                        final service = _services[index];
-                        final quantity = service['quantity'] as int;
-                        
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 16),
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        itemCount: _services.length,
+                        itemBuilder: (context, index) {
+                          final service = _services[index];
+                          final quantity = service['quantity'] as int;
+                          
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 16),
                           padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withOpacity(0.05),
@@ -414,127 +404,108 @@ class _SelectedServicesScreenState extends State<SelectedServicesScreen> {
                                 offset: const Offset(0, 2),
                               ),
                             ],
-                          ),
-                          child: Column(
-                            children: [
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          service['name'],
+                            ),
+                          child: widget.isGroupAppointment 
+                            ? Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                  // Service name and duration - aligned to left
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        service['name'],
+                                        style: AppTypography.titleMedium.copyWith(
+                                          fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                      Text(
+                                        service['duration'],
+                                        style: AppTypography.bodySmall.copyWith(
+                                          color: AppColors.textSecondary,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                
+                                // Quantity controls on the right (only for group appointments)
+                                  Row(
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () => _updateQuantity(index, -1),
+                                        child: Container(
+                                          width: 30,
+                                          height: 30,
+                                          decoration: BoxDecoration(
+                                            color: quantity > 1 
+                                                ? AppColors.textSecondary 
+                                                : Colors.grey[300],
+                                            borderRadius: BorderRadius.circular(6),
+                                          ),
+                                          child: Icon(
+                                            Icons.remove,
+                                            color: quantity > 1 ? Colors.white : Colors.grey[500],
+                                            size: 16,
+                                          ),
+                                        ),
+                                      ),
+                                      Container(
+                                        width: 40,
+                                        alignment: Alignment.center,
+                                        child: Text(
+                                          quantity.toString(),
                                           style: AppTypography.titleMedium.copyWith(
                                             fontWeight: FontWeight.w600,
                                           ),
                                         ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          service['duration'],
-                                          style: AppTypography.bodySmall.copyWith(
-                                            color: AppColors.textSecondary,
-                                            fontSize: 12,
+                                      ),
+                                      GestureDetector(
+                                        onTap: () => _updateQuantity(index, 1),
+                                        child: Container(
+                                          width: 30,
+                                          height: 30,
+                                          decoration: BoxDecoration(
+                                            color: AppColors.primary,
+                                            borderRadius: BorderRadius.circular(6),
+                                          ),
+                                          child: const Icon(
+                                            Icons.add,
+                                            color: Colors.white,
+                                            size: 16,
                                           ),
                                         ),
-                                      ],
-                                    ),
+                                      ),
+                                    ],
                                   ),
+                              ],
+                              )
+                            : Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
                                   Text(
-                                    service['price'],
+                                    service['name'],
                                     style: AppTypography.titleMedium.copyWith(
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
-                                  const SizedBox(width: 16),
-                                  GestureDetector(
-                                    onTap: () => _removeService(index),
-                                    child: Container(
-                                      width: 32,
-                                      height: 32,
-                                      decoration: BoxDecoration(
-                                        color: Colors.red.withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(16),
-                                      ),
-                                      child: const Icon(
-                                        Icons.delete_outline,
-                                        color: Colors.red,
-                                        size: 18,
-                                      ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    service['duration'],
+                                    style: AppTypography.bodySmall.copyWith(
+                                      color: AppColors.textSecondary,
+                                      fontSize: 12,
                                     ),
                                   ),
                                 ],
-                              ),
-                              
-                              // Quantity controls for group appointments
-                              if (widget.isGroupAppointment) ...[
-                                const SizedBox(height: 16),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      'Quantity',
-                                      style: AppTypography.bodyMedium.copyWith(
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    Row(
-                                      children: [
-                                        GestureDetector(
-                                          onTap: () => _updateQuantity(index, -1),
-                                          child: Container(
-                                            width: 36,
-                                            height: 36,
-                                            decoration: BoxDecoration(
-                                              color: quantity > 1 
-                                                  ? AppColors.textSecondary 
-                                                  : Colors.grey[300],
-                                              borderRadius: BorderRadius.circular(18),
-                                            ),
-                                            child: Icon(
-                                              Icons.remove,
-                                              color: quantity > 1 ? Colors.white : Colors.grey[500],
-                                              size: 20,
-                                            ),
-                                          ),
-                                        ),
-                                        Container(
-                                          width: 50,
-                                          alignment: Alignment.center,
-                                          child: Text(
-                                            quantity.toString(),
-                                            style: AppTypography.titleMedium.copyWith(
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ),
-                                        GestureDetector(
-                                          onTap: () => _updateQuantity(index, 1),
-                                          child: Container(
-                                            width: 36,
-                                            height: 36,
-                                            decoration: BoxDecoration(
-                                              color: AppColors.primary,
-                                              borderRadius: BorderRadius.circular(18),
-                                            ),
-                                            child: const Icon(
-                                              Icons.add,
-                                              color: Colors.white,
-                                              size: 20,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  ),
+                            ),
+                          );
+                        },
+                      ),
+                ),
               ],
             ),
           ),
@@ -561,9 +532,7 @@ class _SelectedServicesScreenState extends State<SelectedServicesScreen> {
               child: Text(
                 _services.isEmpty 
                     ? 'No services selected'
-                    : totalPrice > 0 
-                        ? 'Continue - \$${totalPrice.toStringAsFixed(0)}' 
-                        : 'Continue',
+                    : 'Continue',
                 style: AppTypography.titleSmall.copyWith(
                   color: _services.isNotEmpty ? Colors.white : Colors.grey[600],
                   fontWeight: FontWeight.w600,
@@ -575,4 +544,4 @@ class _SelectedServicesScreenState extends State<SelectedServicesScreen> {
       ),
     );
   }
-} 
+}

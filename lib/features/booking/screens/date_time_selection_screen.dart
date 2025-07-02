@@ -7,7 +7,7 @@ import '../widgets/booking_card.dart';
 import '../widgets/booking_button.dart';
 import '../widgets/calendar_widget.dart';
 import '../widgets/booking_card.dart' show TimeSlotCard;
-import 'customer_info_screen.dart';
+import 'appointment_summary_screen.dart';
 
 class DateTimeSelectionScreen extends StatefulWidget {
   const DateTimeSelectionScreen({super.key});
@@ -34,12 +34,11 @@ class _DateTimeSelectionScreenState extends State<DateTimeSelectionScreen> {
             children: [
               BookingProgressIndicator(
                 currentStep: 2,
-                totalSteps: 5,
+                totalSteps: 4,
                 stepTitles: const [
                   'Select Service',
                   'Choose Staff',
                   'Pick Date & Time',
-                  'Your Details',
                   'Confirm Booking',
                 ],
               ),
@@ -63,8 +62,8 @@ class _DateTimeSelectionScreenState extends State<DateTimeSelectionScreen> {
           ),
           bottomNavigationBar: canContinue
               ? BookingFloatingButton(
-                  text: 'Continue',
-                  onPressed: () => _navigateToCustomerInfo(context),
+                  text: 'Review Appointment',
+                  onPressed: () => _navigateToSummary(context),
                 )
               : null,
         );
@@ -240,10 +239,10 @@ class _DateTimeSelectionScreenState extends State<DateTimeSelectionScreen> {
     bookingProvider.selectTimeSlot(timeSlot);
   }
 
-  void _navigateToCustomerInfo(BuildContext context) {
+  void _navigateToSummary(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => const CustomerInfoScreen(),
+        builder: (context) => const AppointmentSummaryScreen(),
       ),
     );
   }

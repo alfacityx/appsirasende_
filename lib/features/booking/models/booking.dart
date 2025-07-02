@@ -60,9 +60,7 @@ class Booking {
     return services.isNotEmpty &&
         selectedStaff != null &&
         selectedDate != null &&
-        selectedTimeSlot != null &&
-        customerInfo != null &&
-        customerInfo!.isComplete;
+        selectedTimeSlot != null;
   }
 
   bool get isConfirmed => status == BookingStatus.confirmed;
@@ -323,10 +321,8 @@ class Booking {
 
   bool isValidBooking() {
     return allSelectedServices.isNotEmpty &&
-        selectedStaff != null &&
-        selectedDate != null &&
-        selectedTimeSlot != null &&
-        customerInfo != null &&
-        customerInfo!.isComplete;
+           selectedStaff != null &&
+           selectedDate != null &&
+        selectedTimeSlot != null;
   }
 } 

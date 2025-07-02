@@ -3,10 +3,11 @@ import 'package:provider/provider.dart';
 import '../../../core/theme/theme.dart';
 import '../providers/booking_provider.dart';
 import '../widgets/booking_app_bar.dart';
-import '../widgets/booking_button.dart';
 
-class BookingConfirmationScreen extends StatelessWidget {
-  const BookingConfirmationScreen({super.key});
+import 'booking_confirmation_screen.dart';
+
+class AppointmentSummaryScreen extends StatelessWidget {
+  const AppointmentSummaryScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -17,24 +18,62 @@ class BookingConfirmationScreen extends StatelessWidget {
         return Scaffold(
           backgroundColor: AppColors.background,
           appBar: const BookingAppBar(
-            title: 'Appointment Confirmed',
-            showBackButton: false,
+            title: 'Review Appointment',
           ),
-          body: SingleChildScrollView(
-            padding: AppSpacing.screenPadding,
-            child: Column(
-              children: [
-                const SizedBox(height: AppSpacing.space32),
-                _buildSuccessIcon(),
-                const SizedBox(height: AppSpacing.space24),
-                _buildSuccessMessage(),
-                const SizedBox(height: AppSpacing.space32),
-                _buildAppointmentDetailsCard(booking),
-                const SizedBox(height: AppSpacing.space32),
-                _buildActionButtons(context, bookingProvider),
-                const SizedBox(height: AppSpacing.space24),
-                _buildImportantInfo(),
-              ],
+          body: Column(
+            children: [
+              BookingProgressIndicator(
+                currentStep: 3,
+                totalSteps: 4,
+                stepTitles: const [
+                  'Select Service',
+                  'Choose Staff',
+                  'Pick Date & Time',
+                  'Confirm Booking',
+                ],
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: AppSpacing.screenPadding,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+
+                      
+                      _buildSummaryCard(context, booking),
+                      const SizedBox(height: AppSpacing.space24),
+                      
+                      _buildImportantInfo(),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          bottomNavigationBar: Container(
+            color: Colors.white,
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: ElevatedButton(
+                  onPressed: () => _confirmAppointment(context, bookingProvider),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    'Confirm Appointment',
+                    style: AppTypography.titleMedium.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
         );
@@ -42,45 +81,7 @@ class BookingConfirmationScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSuccessIcon() {
-    return Container(
-      width: 80,
-      height: 80,
-      decoration: BoxDecoration(
-        color: AppColors.success,
-        shape: BoxShape.circle,
-      ),
-      child: const Icon(
-        Icons.check,
-        color: Colors.white,
-        size: 48,
-      ),
-    );
-  }
-
-  Widget _buildSuccessMessage() {
-    return Column(
-      children: [
-        Text(
-          'Appointment Confirmed!',
-          style: AppTypography.headlineLarge.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: AppSpacing.space8),
-        Text(
-          'Your appointment has been successfully booked',
-          style: AppTypography.bodyLarge.copyWith(
-            color: AppColors.textSecondary,
-          ),
-          textAlign: TextAlign.center,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAppointmentDetailsCard(booking) {
+  Widget _buildSummaryCard(BuildContext context, booking) {
     return Container(
       width: double.infinity,
       padding: AppSpacing.cardPaddingAll,
@@ -99,7 +100,7 @@ class BookingConfirmationScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Appointment Details',
+            'Appointment Summary',
             style: AppTypography.titleLarge.copyWith(
               fontWeight: FontWeight.w600,
             ),
@@ -111,28 +112,35 @@ class BookingConfirmationScreen extends StatelessWidget {
             label: 'Salon',
             value: booking.providerName,
           ),
-          const SizedBox(height: AppSpacing.space16),
+          
+          const Divider(height: 32),
           
           _buildDetailRow(
-            icon: Icons.content_cut,
+            context: context,
+            icon: Icons.star,
             label: 'Service',
             value: _getServiceNames(booking),
           ),
-          const SizedBox(height: AppSpacing.space16),
+          
+          const Divider(height: 32),
           
           _buildDetailRow(
+            context: context,
             icon: Icons.person,
             label: 'Staff',
             value: booking.selectedStaff?.fullName ?? 'Any Available Specialist',
           ),
-          const SizedBox(height: AppSpacing.space16),
+          
+          const Divider(height: 32),
           
           _buildDetailRow(
+            context: context,
             icon: Icons.calendar_today,
             label: 'Date & Time',
             value: _getDateTimeDetails(booking),
           ),
-          const SizedBox(height: AppSpacing.space16),
+          
+          const Divider(height: 32),
           
           _buildDetailRow(
             icon: Icons.location_on,
@@ -145,6 +153,7 @@ class BookingConfirmationScreen extends StatelessWidget {
   }
 
   Widget _buildDetailRow({
+    BuildContext? context,
     required IconData icon,
     required String label,
     required String value,
@@ -174,8 +183,8 @@ class BookingConfirmationScreen extends StatelessWidget {
                 label,
                 style: AppTypography.labelMedium.copyWith(
                   color: AppColors.textSecondary,
-          ),
-        ),
+                ),
+              ),
               const SizedBox(height: AppSpacing.space4),
               Text(
                 value,
@@ -190,63 +199,14 @@ class BookingConfirmationScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButtons(BuildContext context, BookingProvider bookingProvider) {
-    return Column(
-      children: [
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: () => _goHome(context),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-        ),
-            ),
-            child: Text(
-              'Done',
-              style: AppTypography.titleMedium.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: AppSpacing.space12),
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton(
-            onPressed: () => _bookAnother(context, bookingProvider),
-            style: OutlinedButton.styleFrom(
-              side: BorderSide(color: AppColors.primary),
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: Text(
-              'Book Another Appointment',
-              style: AppTypography.titleMedium.copyWith(
-                color: AppColors.primary,
-                fontWeight: FontWeight.w600,
-            ),
-            ),
-        ),
-      ),
-      ],
-    );
-  }
-
   Widget _buildImportantInfo() {
     return Container(
       width: double.infinity,
       padding: AppSpacing.cardPaddingAll,
       decoration: BoxDecoration(
-        color: AppColors.info.withOpacity(0.1),
+        color: AppColors.warning.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.info.withOpacity(0.3)),
+        border: Border.all(color: AppColors.warning.withOpacity(0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -254,35 +214,35 @@ class BookingConfirmationScreen extends StatelessWidget {
           Row(
             children: [
               Icon(
-                Icons.info_outline,
-                color: AppColors.info,
+                Icons.schedule,
+                color: AppColors.warning,
                 size: 20,
               ),
               const SizedBox(width: AppSpacing.space8),
-          Text(
-                'Important Information',
+              Text(
+                'Before You Confirm',
                 style: AppTypography.titleMedium.copyWith(
-                  color: AppColors.info,
+                  color: AppColors.warning,
                   fontWeight: FontWeight.w600,
                 ),
               ),
             ],
           ),
           const SizedBox(height: AppSpacing.space12),
-            Text(
+          Text(
             '• Please arrive 10 minutes before your appointment',
             style: AppTypography.bodyMedium,
-            ),
-            const SizedBox(height: AppSpacing.space4),
-            Text(
-            '• Payment will be handled at the venue',
-            style: AppTypography.bodyMedium,
-              ),
+          ),
           const SizedBox(height: AppSpacing.space4),
           Text(
-            '• Contact the salon if you need to reschedule',
+            '• Payment will be handled at the venue',
             style: AppTypography.bodyMedium,
-            ),
+          ),
+          const SizedBox(height: AppSpacing.space4),
+          Text(
+            '• Changes can be made by contacting the salon directly',
+            style: AppTypography.bodyMedium,
+          ),
         ],
       ),
     );
@@ -317,15 +277,49 @@ class BookingConfirmationScreen extends StatelessWidget {
     final monthName = months[date.month - 1];
     final dateStr = '$dayName, $monthName ${date.day}, ${date.year}';
     
-    return '$dateStr\nat $timeSlot';
+    return '$dateStr at $timeSlot';
   }
 
-  void _goHome(BuildContext context) {
-    Navigator.of(context).popUntil((route) => route.isFirst);
-  }
 
-  void _bookAnother(BuildContext context, BookingProvider bookingProvider) {
-    bookingProvider.resetBooking();
-    Navigator.of(context).popUntil((route) => route.isFirst);
+
+  Future<void> _confirmAppointment(BuildContext context, BookingProvider bookingProvider) async {
+    // Show loading state
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+
+    // Confirm the booking
+    final success = await bookingProvider.confirmBooking();
+    
+    if (context.mounted) {
+      Navigator.of(context).pop(); // Remove loading dialog
+      
+      if (success) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => const BookingConfirmationScreen(),
+          ),
+        );
+      } else {
+        // Show error dialog
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Booking Failed'),
+            content: const Text('Sorry, we couldn\'t confirm your appointment. Please try again.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
+    }
   }
 } 

@@ -233,24 +233,24 @@ class BookingProvider with ChangeNotifier {
     if (availableDates.isNotEmpty && _availableTimeSlots.isNotEmpty) {
       final date = availableDates.first;
       final timeSlot = _availableTimeSlots.first;
-      
+
       // Parse time slot to create full DateTime
-      try {
-        final timeStr = timeSlot.trim().replaceAll(' ', '');
-        final isPM = timeStr.toLowerCase().contains('pm');
-        final cleanTime = timeStr.replaceAll(RegExp(r'[apm]', caseSensitive: false), '');
-        final parts = cleanTime.split(':');
-        
+    try {
+      final timeStr = timeSlot.trim().replaceAll(' ', '');
+      final isPM = timeStr.toLowerCase().contains('pm');
+      final cleanTime = timeStr.replaceAll(RegExp(r'[apm]', caseSensitive: false), '');
+      final parts = cleanTime.split(':');
+      
         if (parts.length == 2) {
           int hour = int.tryParse(parts[0]) ?? 9;
-          final minute = int.tryParse(parts[1]) ?? 0;
-          
-          if (isPM && hour != 12) {
-            hour += 12;
-          } else if (!isPM && hour == 12) {
-            hour = 0;
-          }
-          
+      final minute = int.tryParse(parts[1]) ?? 0;
+      
+      if (isPM && hour != 12) {
+        hour += 12;
+      } else if (!isPM && hour == 12) {
+        hour = 0;
+      }
+      
           return DateTime(date.year, date.month, date.day, hour, minute);
         }
       } catch (e) {
@@ -277,8 +277,8 @@ class BookingProvider with ChangeNotifier {
       taxAmount: taxAmount,
       totalAmount: totalAmount,
     );
-  }
-
+      }
+      
   // Validation helpers
   bool get canProceedToStaffSelection {
     final services = _booking.allSelectedServices;
@@ -287,7 +287,7 @@ class BookingProvider with ChangeNotifier {
   
   bool get canProceedToDateTime => _booking.selectedStaff != null;
   
-  bool get canProceedToCustomerInfo => 
+  bool get canConfirmBooking => 
       _booking.selectedDate != null && _booking.selectedTimeSlot != null;
       
   bool get canProceedToSummary => 

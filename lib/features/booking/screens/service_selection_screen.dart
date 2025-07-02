@@ -27,12 +27,11 @@ class ServiceSelectionScreen extends StatelessWidget {
             children: [
               BookingProgressIndicator(
                 currentStep: 0,
-                totalSteps: 5,
+                totalSteps: 4,
                 stepTitles: const [
                   'Select Service',
                   'Choose Staff',
                   'Pick Date & Time',
-                  'Your Details',
                   'Confirm Booking',
                 ],
               ),
@@ -186,3 +185,4 @@ class ServiceSelectionScreen extends StatelessWidget {
     );
   }
 } 
+ 
