@@ -1,0 +1,70 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Bloc State Management Rules
+
+## Cubit vs Bloc Selection
+- Use **Cubit** for managing simple state
+- Use **Bloc** for complex event-driven state management
+
+## State Design
+- Extend states with Freezed for immutability
+- Use descriptive and meaningful event names for Bloc
+- Handle state transitions and side effects in Bloc's mapEventToState
+
+## Widget Integration
+- Prefer `context.read()` or `context.watch()` for accessing Cubit/Bloc states in widgets
+- Use `BlocBuilder` for widgets that depend on Cubit/Bloc state
+- Use `BlocListener` for handling side effects, such as navigation or showing dialogs
+
+## State Pattern Examples
+```dart
+// Cubit example
+class CounterCubit extends Cubit<int> {
+  CounterCubit() : super(0);
+  
+  void increment() => emit(state + 1);
+  void decrement() => emit(state - 1);
+}
+
+// Bloc with Freezed state
+@freezed
+class AuthState with _$AuthState {
+  const factory AuthState.initial() = _Initial;
+  const factory AuthState.loading() = _Loading;
+  const factory AuthState.authenticated(User user) = _Authenticated;
+  const factory AuthState.unauthenticated() = _Unauthenticated;
+  const factory AuthState.error(String message) = _Error;
+}
+```
+
+## Widget Usage Patterns
+```dart
+// BlocBuilder for state-dependent UI
+BlocBuilder<CounterCubit, int>(
+  builder: (context, count) {
+    return Text('Count: $count');
+  },
+)
+
+// BlocListener for side effects
+BlocListener<AuthBloc, AuthState>(
+  listener: (context, state) {
+    state.maybeWhen(
+      authenticated: (_) => context.go('/home'),
+      error: (message) => _showError(message),
+      orElse: () {},
+    );
+  },
+  child: YourWidget(),
+)
+```
+
+## State Management Best Practices
+- Manage error handling and loading states within Cubit states
+- Keep business logic in Cubit/Bloc, not in widgets
+- Use meaningful state transitions
+- Handle all possible state cases in UI
+

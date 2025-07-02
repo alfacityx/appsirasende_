@@ -1,0 +1,34 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# General Flutter/Dart Rules
+
+## Key Principles
+- Write concise, technical Dart code with accurate examples
+- Use functional and declarative programming patterns where appropriate
+- Prefer composition over inheritance
+- Use descriptive variable names with auxiliary verbs (e.g., `isLoading`, `hasError`)
+- Structure files: exported widget, subwidgets, helpers, static content, types
+
+## Code Organization
+- Keep lines no longer than 80 characters
+- Add commas before closing brackets for multi-parameter functions
+- Use trailing commas for better formatting and diffs
+- Document complex logic and non-obvious code decisions
+- Follow official Flutter, Bloc, and Firebase documentation for best practices
+
+## Debugging and Logging
+- Use `log` instead of `print` for debugging
+- Use `BlocObserver` for monitoring state transitions during debugging
+
+## Code Generation
+- Utilize `build_runner` for generating code from annotations (Freezed, JSON serialization)
+- Run `flutter pub run build_runner build --delete-conflicting-outputs` after modifying annotated classes
+
+## Key Conventions
+- Optimize for Flutter performance metrics (first meaningful paint, time to interactive)
+- Prefer stateless widgets wherever possible
+- Create small, private widget classes instead of methods like `Widget _build...`
+

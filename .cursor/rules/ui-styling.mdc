@@ -1,0 +1,76 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# UI and Styling Rules
+
+## Widget Architecture
+- Use Flutter's built-in widgets and create custom widgets when needed
+- Create small, private widget classes instead of methods like `Widget _build...`
+- Use const widgets where possible to optimize rebuilds
+
+## Responsive Design
+- Implement responsive design using `LayoutBuilder` or `MediaQuery`
+- Design for multiple screen sizes and orientations
+- Use flexible layouts with `Flex`, `Expanded`, and `Flexible`
+
+## Theming
+- Use themes for consistent styling across the app
+- Leverage `Theme.of(context)` for accessing theme data
+- Use modern text theme properties:
+  - `Theme.of(context).textTheme.titleLarge` instead of `headline6`
+  - `Theme.of(context).textTheme.headlineSmall` instead of `headline5`
+
+## Form Widgets
+- In TextFields, set appropriate `textCapitalization`, `keyboardType`, and `textInputAction`
+- Implement proper form validation
+- Use `Form` widget with `GlobalKey<FormState>` for complex forms
+
+```dart
+// TextField best practices
+TextField(
+  keyboardType: TextInputType.emailAddress,
+  textCapitalization: TextCapitalization.none,
+  textInputAction: TextInputAction.next,
+  decoration: const InputDecoration(
+    labelText: 'Email',
+    hintText: 'Enter your email',
+  ),
+)
+```
+
+## Image Handling
+- Always include an `errorBuilder` when using `Image.network`
+- Use `AssetImage` for static images
+- Use `cached_network_image` for remote images with caching
+
+```dart
+// Network image with error handling
+Image.network(
+  imageUrl,
+  errorBuilder: (context, error, stackTrace) {
+    return const Icon(Icons.error, color: Colors.red);
+  },
+  loadingBuilder: (context, child, loadingProgress) {
+    if (loadingProgress == null) return child;
+    return const CircularProgressIndicator();
+  },
+)
+```
+
+## Interactive Elements
+- Implement `RefreshIndicator` for pull-to-refresh functionality
+- Use appropriate touch targets (minimum 44x44 logical pixels)
+- Provide visual feedback for user interactions
+
+## List Optimization
+- Implement list view optimizations using `ListView.builder`
+- Use `ListView.separated` for lists with dividers
+- Consider `CustomScrollView` with slivers for complex scrolling behaviors
+
+## Accessibility
+- Provide semantic labels for screen readers
+- Ensure proper color contrast ratios
+- Support different text scaling factors
+

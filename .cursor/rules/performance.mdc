@@ -1,0 +1,127 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Performance Optimization Rules
+
+## Widget Performance
+- Use const widgets where possible to optimize rebuilds
+- Create small, private widget classes instead of methods returning widgets
+- Leverage `RepaintBoundary` for complex widgets that don't need frequent updates
+- Use `AutomaticKeepAliveClientMixin` for tabs that should retain state
+
+## List Performance
+- Implement list view optimizations using `ListView.builder`
+- Use `ListView.separated` for lists with dividers
+- Consider `CustomScrollView` with slivers for complex scrolling behaviors
+- Implement lazy loading for large datasets
+
+```dart
+// Optimized list implementation
+ListView.builder(
+  itemCount: items.length,
+  itemBuilder: (context, index) {
+    return _ItemTile(item: items[index]);
+  },
+  // Use physics for better scrolling performance
+  physics: const BouncingScrollPhysics(),
+)
+
+// Private widget class for list items
+class _ItemTile extends StatelessWidget {
+  const _ItemTile({required this.item});
+  
+  final Item item;
+  
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      title: Text(item.title),
+      subtitle: Text(item.description),
+    );
+  }
+}
+```
+
+## Image Optimization
+- Use `AssetImage` for static images
+- Use `cached_network_image` for remote images with caching
+- Implement proper image sizing and compression
+- Use `Image.memory` with appropriate cache management
+
+## Firebase Performance
+- Optimize Firebase queries by using indexes and limiting query results
+- Use compound queries efficiently
+- Implement pagination for large data sets
+- Cache frequently accessed data locally
+
+```dart
+// Optimized Firebase query with pagination
+Query<Map<String, dynamic>> getPaginatedPosts({
+  DocumentSnapshot? lastDocument,
+  int limit = 20,
+}) {
+  var query = FirebaseFirestore.instance
+      .collection('posts')
+      .where('isDeleted', isEqualTo: false)
+      .orderBy('createdAt', descending: true)
+      .limit(limit);
+      
+  if (lastDocument != null) {
+    query = query.startAfterDocument(lastDocument);
+  }
+  
+  return query;
+}
+```
+
+## State Management Performance
+- Use `BlocBuilder` instead of `BlocConsumer` when you don't need listeners
+- Implement `buildWhen` conditions in `BlocBuilder` to prevent unnecessary rebuilds
+- Use `context.select()` for specific state properties
+
+```dart
+// Selective state listening
+BlocBuilder<CounterCubit, CounterState>(
+  buildWhen: (previous, current) => previous.count != current.count,
+  builder: (context, state) {
+    return Text('Count: ${state.count}');
+  },
+)
+
+// Select specific state properties
+final isLoading = context.select<DataCubit, bool>(
+  (cubit) => cubit.state.maybeWhen(
+    loading: () => true,
+    orElse: () => false,
+  ),
+);
+```
+
+## Memory Management
+- Dispose controllers and streams properly
+- Use `AutoDispose` providers when using Riverpod
+- Implement proper lifecycle management in stateful widgets
+- Avoid memory leaks in async operations
+
+## Build Optimization
+- Minimize widget rebuilds by using const constructors
+- Split large widgets into smaller, focused widgets
+- Use `Selector` or similar for granular state updates
+- Implement efficient key strategies for animated lists
+
+## Flutter Performance Metrics
+- Optimize for first meaningful paint
+- Minimize time to interactive
+- Monitor frame rendering performance
+- Use Flutter Inspector and DevTools for performance analysis
+
+## Best Practices
+- Profile your app regularly using Flutter DevTools
+- Monitor app size and implement code splitting when necessary
+- Use `--profile` mode for performance testing
+- Implement proper error boundaries to prevent performance degradation
+- Cache computed values when appropriate
+- Use efficient data structures for your use cases
+

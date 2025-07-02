@@ -1,0 +1,48 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Dart Language Rules
+
+## Syntax and Patterns
+- Use const constructors for immutable widgets
+- Leverage Freezed for immutable state classes and unions
+- Use arrow syntax for simple functions and methods
+- Prefer expression bodies for one-line getters and setters
+- Use trailing commas for better formatting and diffs
+
+## Variable Naming
+- Use descriptive variable names with auxiliary verbs (e.g., `isLoading`, `hasError`)
+- Follow camelCase convention for variables and methods
+- Use PascalCase for classes and types
+
+## Function Style
+```dart
+// Preferred: Arrow syntax for simple functions
+String get displayName => '${firstName} ${lastName}';
+
+// Preferred: Expression body for simple methods
+bool get isValid => email.isNotEmpty && password.length >= 8;
+
+// Use const constructors
+const MyWidget({super.key, required this.title});
+```
+
+## Immutability with Freezed
+```dart
+@freezed
+class UserState with _$UserState {
+  const factory UserState.initial() = _Initial;
+  const factory UserState.loading() = _Loading;
+  const factory UserState.loaded(User user) = _Loaded;
+  const factory UserState.error(String message) = _Error;
+}
+```
+
+## Best Practices
+- Prefer composition over inheritance
+- Use functional programming patterns where appropriate
+- Leverage Dart's null safety features
+- Use late keyword judiciously and only when necessary
+

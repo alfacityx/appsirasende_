@@ -1,0 +1,86 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Model and Database Conventions
+
+## Firestore Document Structure
+- Include `createdAt`, `updatedAt`, and `isDeleted` fields in Firestore documents
+- Use consistent field naming across all models
+- Implement soft delete with `isDeleted` flag
+
+## JSON Serialization
+- Use `@JsonSerializable(fieldRename: FieldRename.snake)` for models
+- Implement `@JsonKey(includeFromJson: true, includeToJson: false)` for read-only fields
+- Use `@JsonValue(int)` for enums that go to the database
+
+## Model Examples
+```dart
+@freezed
+@JsonSerializable(fieldRename: FieldRename.snake)
+class User with _$User {
+  const factory User({
+    required String id,
+    required String email,
+    required String firstName,
+    required String lastName,
+    @JsonKey(includeFromJson: true, includeToJson: false)
+    DateTime? createdAt,
+    @JsonKey(includeFromJson: true, includeToJson: false)
+    DateTime? updatedAt,
+    @Default(false) bool isDeleted,
+  }) = _User;
+
+  factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
+}
+
+// Enum with database values
+enum UserRole {
+  @JsonValue(0)
+  admin,
+  @JsonValue(1)
+  user,
+  @JsonValue(2)
+  moderator,
+}
+```
+
+## Field Conventions
+- Use snake_case for JSON field names
+- Use camelCase for Dart property names
+- Include metadata fields consistently:
+  - `createdAt`: Document creation timestamp
+  - `updatedAt`: Last modification timestamp
+  - `isDeleted`: Soft delete flag
+
+## Validation and Constraints
+- Implement validation in model constructors when possible
+- Use Freezed's `@Assert` for simple validations
+- Create separate validation classes for complex business rules
+
+## Relationship Patterns
+```dart
+// Reference-based relationships
+@freezed
+class Post with _$Post {
+  const factory Post({
+    required String id,
+    required String title,
+    required String content,
+    required String authorId, // Reference to User document
+    required DateTime createdAt,
+    DateTime? updatedAt,
+    @Default(false) bool isDeleted,
+  }) = _Post;
+
+  factory Post.fromJson(Map<String, dynamic> json) => _$PostFromJson(json);
+}
+```
+
+## Best Practices
+- Keep models immutable using Freezed
+- Use factory constructors for different initialization patterns
+- Implement `copyWith` methods through Freezed
+- Handle nullable fields appropriately with Dart's null safety
+

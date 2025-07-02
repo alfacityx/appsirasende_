@@ -1,0 +1,126 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Error Handling Rules
+
+## Error Display
+- Implement error handling in views using `SelectableText.rich` instead of SnackBars
+- Display errors in `SelectableText.rich` with red color for visibility
+- Make error messages user-friendly and actionable
+
+## State-Level Error Management
+- Handle empty states within the displaying screen
+- Manage error handling and loading states within Cubit states
+- Keep error states as part of your main state classes
+
+## Error UI Patterns
+```dart
+// Error display with SelectableText.rich
+Widget _buildErrorDisplay(String errorMessage) {
+  return SelectableText.rich(
+    TextSpan(
+      children: [
+        const TextSpan(
+          text: 'Error: ',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.red,
+          ),
+        ),
+        TextSpan(
+          text: errorMessage,
+          style: const TextStyle(color: Colors.red),
+        ),
+      ],
+    ),
+  );
+}
+
+// Error state in widget
+BlocBuilder<DataCubit, DataState>(
+  builder: (context, state) {
+    return state.when(
+      loading: () => const CircularProgressIndicator(),
+      loaded: (data) => DataListView(data: data),
+      error: (message) => _buildErrorDisplay(message),
+      empty: () => const Text('No data available'),
+    );
+  },
+)
+```
+
+## Exception Handling
+```dart
+// Repository-level error handling
+Future<Result<User>> getUser(String userId) async {
+  try {
+    final doc = await _firestore.collection('users').doc(userId).get();
+    if (!doc.exists) {
+      return const Result.error('User not found');
+    }
+    final user = User.fromJson(doc.data()!);
+    return Result.success(user);
+  } on FirebaseException catch (e) {
+    log('Firebase error: ${e.code} - ${e.message}');
+    return Result.error(_getFirebaseErrorMessage(e));
+  } catch (e) {
+    log('Unexpected error: $e');
+    return const Result.error('An unexpected error occurred');
+  }
+}
+
+// Custom error mapping
+String _getFirebaseErrorMessage(FirebaseException e) {
+  switch (e.code) {
+    case 'permission-denied':
+      return 'You do not have permission to access this data';
+    case 'unavailable':
+      return 'Service is currently unavailable. Please try again later';
+    case 'not-found':
+      return 'The requested data was not found';
+    default:
+      return 'An error occurred: ${e.message}';
+  }
+}
+```
+
+## Result Pattern
+```dart
+// Result type for error handling
+@freezed
+class Result<T> with _$Result<T> {
+  const factory Result.success(T data) = _Success<T>;
+  const factory Result.error(String message) = _Error<T>;
+}
+
+// Usage in Cubit
+void loadData() async {
+  emit(const DataState.loading());
+  
+  final result = await _repository.getData();
+  result.when(
+    success: (data) => emit(DataState.loaded(data)),
+    error: (message) => emit(DataState.error(message)),
+  );
+}
+```
+
+## Validation Patterns
+- Implement form validation with clear error messages
+- Use real-time validation for better UX
+- Provide specific validation feedback
+
+## Global Error Handling
+- Implement app-wide error logging
+- Use Firebase Crashlytics for production error tracking
+- Handle network connectivity issues gracefully
+
+## Best Practices
+- Always provide meaningful error messages to users
+- Log technical details for debugging while showing user-friendly messages
+- Handle offline scenarios appropriately
+- Implement retry mechanisms for transient errors
+- Never expose sensitive information in error messages
+

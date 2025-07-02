@@ -1,0 +1,94 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Navigation Rules
+
+## Router Selection
+- Use **GoRouter** or **auto_route** for navigation and deep linking
+- Implement declarative routing patterns
+- Support deep linking and URL-based navigation
+
+## GoRouter Implementation
+```dart
+// GoRouter setup example
+final router = GoRouter(
+  initialLocation: '/splash',
+  routes: [
+    GoRoute(
+      path: '/splash',
+      builder: (context, state) => const SplashScreen(),
+    ),
+    GoRoute(
+      path: '/auth',
+      builder: (context, state) => const AuthScreen(),
+    ),
+    GoRoute(
+      path: '/home',
+      builder: (context, state) => const HomeScreen(),
+      routes: [
+        GoRoute(
+          path: '/profile/:userId',
+          builder: (context, state) {
+            final userId = state.pathParameters['userId']!;
+            return ProfileScreen(userId: userId);
+          },
+        ),
+      ],
+    ),
+  ],
+  redirect: (context, state) {
+    // Handle authentication-based redirects
+    final isAuthenticated = context.read<AuthCubit>().state.maybeWhen(
+      authenticated: (_) => true,
+      orElse: () => false,
+    );
+    
+    if (!isAuthenticated && state.location != '/auth') {
+      return '/auth';
+    }
+    return null;
+  },
+);
+```
+
+## Navigation Patterns
+- Use `context.go()` for navigation replacement
+- Use `context.push()` for navigation stacking
+- Use `context.pop()` for going back
+- Handle navigation from Bloc listeners, not builders
+
+## Deep Linking
+- Implement proper URL structure for deep linking
+- Handle route parameters and query parameters
+- Support web URLs and mobile deep links
+
+## Navigation with State Management
+```dart
+// Navigate from BlocListener
+BlocListener<AuthBloc, AuthState>(
+  listener: (context, state) {
+    state.maybeWhen(
+      authenticated: (_) => context.go('/home'),
+      unauthenticated: () => context.go('/auth'),
+      orElse: () {},
+    );
+  },
+  child: YourWidget(),
+)
+```
+
+## Route Protection
+- Implement authentication guards
+- Handle authorization checks in route redirects
+- Provide fallback routes for unauthorized access
+
+## Best Practices
+- Keep navigation logic out of widgets when possible
+- Use named routes for better maintainability
+- Implement proper error handling for invalid routes
+- Support browser back/forward buttons on web
+- Handle navigation state restoration
+- Use type-safe route parameters when possible
+
