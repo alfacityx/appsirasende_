@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/theme.dart';
 import '../providers/booking_provider.dart';
+import '../widgets/booking_app_bar.dart';
+import '../widgets/booking_button.dart';
 import '../models/service.dart';
 import 'staff_selection_screen.dart';
 
@@ -199,349 +201,274 @@ class _SelectedServicesScreenState extends State<SelectedServicesScreen> {
     }
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          'Services',
-          style: AppTypography.titleLarge.copyWith(
-            fontWeight: FontWeight.w600,
-            color: Colors.black,
-          ),
-        ),
-        centerTitle: true,
+      backgroundColor: AppColors.background,
+      appBar: const BookingAppBar(
+        title: 'Services',
+        showBackButton: true,
       ),
       body: Column(
         children: [
-          // Progress indicator
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  flex: 3,
-                  child: Container(
-                    height: 4,
-                    margin: const EdgeInsets.only(left: 8),
-                    color: Colors.grey[300],
-                  ),
-                ),
-              ],
+          BookingProgressIndicator(
+            currentStep: 0,
+            totalSteps: 4,
+            stepTitles: const [
+              'Select Service',
+              'Choose Staff',
+              'Pick Date & Time',
+              'Confirm Booking',
+            ],
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: AppSpacing.screenPadding,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildProviderInfo(),
+                  const SizedBox(height: AppSpacing.space24),
+                  _buildServicesSection(),
+                ],
+              ),
             ),
           ),
-          const SizedBox(height: 24),
-          
-          // Step indicator
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Row(
-              children: [
-                Text(
-                  'Select Service',
-                  style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-          
-          // Salon info card
+        ],
+      ),
+      bottomNavigationBar: _services.isNotEmpty
+          ? BookingFloatingButton(
+              text: 'Continue',
+              onPressed: () => _proceedToStaffSelection(context),
+            )
+          : null,
+    );
+  }
+
+  Widget _buildProviderInfo() {
+    return Container(
+      padding: AppSpacing.cardPaddingAll,
+      decoration: BoxDecoration(
+        color: AppColors.primary.withOpacity(0.1),
+        borderRadius: AppSizes.cardBorderRadius,
+      ),
+      child: Row(
+        children: [
           Container(
-            margin: const EdgeInsets.symmetric(horizontal: 24),
-            padding: const EdgeInsets.all(16),
+            width: 48,
+            height: 48,
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
+              color: AppColors.primary,
+              borderRadius: BorderRadius.circular(AppSizes.radiusMd),
             ),
-            child: Row(
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(
-                    Icons.store,
-                    color: Colors.white,
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Text(
-                            widget.salonName,
-                            style: AppTypography.titleMedium.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          if (widget.isGroupAppointment) ...[
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: Colors.purple.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                'Group',
-                                style: AppTypography.bodySmall.copyWith(
-                                  color: Colors.purple,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 10,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        widget.salonAddress,
-                        style: AppTypography.bodySmall.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+            child: const Icon(
+              Icons.business,
+              color: AppColors.background,
+              size: AppSizes.iconLg,
             ),
           ),
-          const SizedBox(height: 24),
-          
-          // Services list
+          const SizedBox(width: AppSpacing.space16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Text(
-                    'Selected Services (${_services.length})',
-                    style: AppTypography.titleMedium.copyWith(
-                      fontWeight: FontWeight.w600,
+                Row(
+                  children: [
+                    Text(
+                      widget.salonName,
+                      style: AppTypography.titleMedium,
                     ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                
-                if (_services.isEmpty)
-                Expanded(
-                    child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                            Icons.content_cut,
-                              size: 64,
-                              color: Colors.grey[400],
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'No services selected',
-                              style: AppTypography.titleMedium.copyWith(
-                              color: Colors.grey[500],
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Go back to select services',
-                              style: AppTypography.bodyMedium.copyWith(
-                              color: Colors.grey[400],
-                              ),
-                            ),
-                          ],
-                      ),
+                    if (widget.isGroupAppointment) ...[
+                      const SizedBox(width: AppSpacing.space8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.purple.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                      )
-                else
-                  Expanded(
-                    child: ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        itemCount: _services.length,
-                        itemBuilder: (context, index) {
-                          final service = _services[index];
-                          final quantity = service['quantity'] as int;
-                          
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 16),
-                          padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                            ),
-                          child: widget.isGroupAppointment 
-                            ? Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                  // Service name and duration - aligned to left
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        service['name'],
-                                        style: AppTypography.titleMedium.copyWith(
-                                          fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                      Text(
-                                        service['duration'],
-                                        style: AppTypography.bodySmall.copyWith(
-                                          color: AppColors.textSecondary,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                
-                                // Quantity controls on the right (only for group appointments)
-                                  Row(
-                                    children: [
-                                      GestureDetector(
-                                        onTap: () => _updateQuantity(index, -1),
-                                        child: Container(
-                                          width: 30,
-                                          height: 30,
-                                          decoration: BoxDecoration(
-                                            color: quantity > 1 
-                                                ? AppColors.textSecondary 
-                                                : Colors.grey[300],
-                                            borderRadius: BorderRadius.circular(6),
-                                          ),
-                                          child: Icon(
-                                            Icons.remove,
-                                            color: quantity > 1 ? Colors.white : Colors.grey[500],
-                                            size: 16,
-                                          ),
-                                        ),
-                                      ),
-                                      Container(
-                                        width: 40,
-                                        alignment: Alignment.center,
-                                        child: Text(
-                                          quantity.toString(),
-                                          style: AppTypography.titleMedium.copyWith(
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ),
-                                      GestureDetector(
-                                        onTap: () => _updateQuantity(index, 1),
-                                        child: Container(
-                                          width: 30,
-                                          height: 30,
-                                          decoration: BoxDecoration(
-                                            color: AppColors.primary,
-                                            borderRadius: BorderRadius.circular(6),
-                                          ),
-                                          child: const Icon(
-                                            Icons.add,
-                                            color: Colors.white,
-                                            size: 16,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                              ],
-                              )
-                            : Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    service['name'],
-                                    style: AppTypography.titleMedium.copyWith(
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    service['duration'],
-                                    style: AppTypography.bodySmall.copyWith(
-                                      color: AppColors.textSecondary,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ],
-                            ),
-                          );
-                        },
+                        child: Text(
+                          'Group',
+                          style: AppTypography.bodySmall.copyWith(
+                            color: Colors.purple,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 10,
+                          ),
+                        ),
                       ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.space4),
+                Text(
+                  widget.salonAddress,
+                  style: AppTypography.bodySmall,
                 ),
               ],
             ),
           ),
         ],
       ),
-      
-      // Bottom continue button
-      bottomNavigationBar: Container(
-        color: Colors.white,
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: ElevatedButton(
-              onPressed: _services.isNotEmpty ? () => _proceedToStaffSelection(context) : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _services.isNotEmpty ? AppColors.primary : Colors.grey[300],
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(25),
-                ),
-                elevation: 0,
-              ),
-              child: Text(
-                _services.isEmpty 
-                    ? 'No services selected'
-                    : 'Continue',
-                style: AppTypography.titleSmall.copyWith(
-                  color: _services.isNotEmpty ? Colors.white : Colors.grey[600],
-                  fontWeight: FontWeight.w600,
-                ),
+    );
+  }
+
+  Widget _buildServicesSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Selected Services (${_services.length})',
+          style: AppTypography.titleLarge,
+        ),
+        const SizedBox(height: AppSpacing.space16),
+        
+        if (_services.isEmpty)
+          Container(
+            height: 200,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.content_cut,
+                    size: 64,
+                    color: Colors.grey[400],
+                  ),
+                  const SizedBox(height: AppSpacing.space16),
+                  Text(
+                    'No services selected',
+                    style: AppTypography.titleMedium.copyWith(
+                      color: Colors.grey[500],
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.space8),
+                  Text(
+                    'Go back to select services',
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: Colors.grey[400],
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
-        ),
-      ),
+          )
+        else
+          ..._services.asMap().entries.map((entry) {
+            final index = entry.key;
+            final service = entry.value;
+            final quantity = service['quantity'] as int;
+            
+            return Container(
+              margin: const EdgeInsets.only(bottom: AppSpacing.space16),
+              padding: AppSpacing.cardPaddingAll,
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: AppSizes.cardBorderRadius,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: widget.isGroupAppointment 
+                ? Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Service name and duration - aligned to left
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              service['name'],
+                              style: AppTypography.titleMedium.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: AppSpacing.space4),
+                            Text(
+                              service['duration'],
+                              style: AppTypography.bodySmall.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      
+                      // Quantity controls on the right (only for group appointments)
+                      Row(
+                        children: [
+                          GestureDetector(
+                            onTap: () => _updateQuantity(index, -1),
+                            child: Container(
+                              width: 30,
+                              height: 30,
+                              decoration: BoxDecoration(
+                                color: quantity > 1 
+                                    ? AppColors.textSecondary 
+                                    : Colors.grey[300],
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Icon(
+                                Icons.remove,
+                                color: quantity > 1 ? Colors.white : Colors.grey[500],
+                                size: 16,
+                              ),
+                            ),
+                          ),
+                          Container(
+                            width: 40,
+                            alignment: Alignment.center,
+                            child: Text(
+                              quantity.toString(),
+                              style: AppTypography.titleMedium.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () => _updateQuantity(index, 1),
+                            child: Container(
+                              width: 30,
+                              height: 30,
+                              decoration: BoxDecoration(
+                                color: AppColors.primary,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Icon(
+                                Icons.add,
+                                color: Colors.white,
+                                size: 16,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  )
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        service['name'],
+                        style: AppTypography.titleMedium.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.space4),
+                      Text(
+                        service['duration'],
+                        style: AppTypography.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+            );
+          }).toList(),
+      ],
     );
   }
 }
