@@ -986,52 +986,6 @@ class _SalonDetailScreenState extends State<SalonDetailScreen> {
     );
   }
 
-  Widget _buildSpecialists() {
-    return Column(
-      children: [
-        Padding(
-          padding: AppSpacing.screenPadding,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Our Specialist',
-                style: AppTypography.titleLarge,
-              ),
-              Text(
-                'See All',
-                style: AppTypography.labelMedium.copyWith(
-                  color: AppColors.primary,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: AppSpacing.space16),
-        SizedBox(
-          height: 140,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: AppSpacing.screenPaddingHorizontal,
-            itemCount: salonDetail.specialists.length,
-            itemBuilder: (context, index) {
-              return Padding(
-                padding: EdgeInsets.only(
-                  right: index < salonDetail.specialists.length - 1 
-                      ? AppSpacing.space16 
-                      : 0,
-                ),
-                child: SpecialistCard(
-                  specialist: salonDetail.specialists[index],
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildServicesSection() {
     return Container(
       padding: AppSpacing.all24,
