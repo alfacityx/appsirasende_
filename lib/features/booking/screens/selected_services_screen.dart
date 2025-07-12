@@ -249,7 +249,7 @@ class _SelectedServicesScreenState extends State<SelectedServicesScreen> {
     return Container(
       padding: AppSpacing.cardPaddingAll,
       decoration: BoxDecoration(
-        color: AppColors.primary.withOpacity(0.1),
+        color: AppColors.primary.withValues(alpha: 0.1),
         borderRadius: AppSizes.cardBorderRadius,
       ),
       child: Row(
@@ -283,7 +283,7 @@ class _SelectedServicesScreenState extends State<SelectedServicesScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.purple.withOpacity(0.1),
+                          color: Colors.purple.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
@@ -322,7 +322,7 @@ class _SelectedServicesScreenState extends State<SelectedServicesScreen> {
         const SizedBox(height: AppSpacing.space16),
         
         if (_services.isEmpty)
-          Container(
+          SizedBox(
             height: 200,
             child: Center(
               child: Column(
@@ -358,14 +358,15 @@ class _SelectedServicesScreenState extends State<SelectedServicesScreen> {
             final quantity = service['quantity'] as int;
             
             return Container(
+              width: double.infinity,
               margin: const EdgeInsets.only(bottom: AppSpacing.space16),
-              padding: AppSpacing.cardPaddingAll,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
               decoration: BoxDecoration(
                 color: AppColors.surface,
                 borderRadius: AppSizes.cardBorderRadius,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -373,7 +374,7 @@ class _SelectedServicesScreenState extends State<SelectedServicesScreen> {
               ),
               child: widget.isGroupAppointment 
                 ? Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       // Service name and duration - aligned to left
                       Expanded(
@@ -386,10 +387,10 @@ class _SelectedServicesScreenState extends State<SelectedServicesScreen> {
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
-                            const SizedBox(height: AppSpacing.space4),
+                            const SizedBox(height: AppSpacing.space8),
                             Text(
                               service['duration'],
-                              style: AppTypography.bodySmall.copyWith(
+                              style: AppTypography.bodyMedium.copyWith(
                                 color: AppColors.textSecondary,
                               ),
                             ),
@@ -457,17 +458,17 @@ class _SelectedServicesScreenState extends State<SelectedServicesScreen> {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(height: AppSpacing.space4),
+                      const SizedBox(height: AppSpacing.space8),
                       Text(
                         service['duration'],
-                        style: AppTypography.bodySmall.copyWith(
+                        style: AppTypography.bodyMedium.copyWith(
                           color: AppColors.textSecondary,
                         ),
                       ),
                     ],
                   ),
             );
-          }).toList(),
+          }),
       ],
     );
   }

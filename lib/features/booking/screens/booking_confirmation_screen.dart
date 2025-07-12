@@ -114,7 +114,7 @@ class BookingConfirmationScreen extends StatelessWidget {
           const SizedBox(height: AppSpacing.space16),
           
           _buildDetailRow(
-            icon: Icons.content_cut,
+            icon: Icons.star,
             label: 'Service',
             value: _getServiceNames(booking),
           ),
@@ -132,13 +132,15 @@ class BookingConfirmationScreen extends StatelessWidget {
             label: 'Date & Time',
             value: _getDateTimeDetails(booking),
           ),
-          const SizedBox(height: AppSpacing.space16),
           
+          if (booking.specialInstructions != null && booking.specialInstructions!.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.space16),
           _buildDetailRow(
-            icon: Icons.location_on,
-            label: 'Address',
-            value: booking.providerAddress,
+              icon: Icons.note,
+              label: 'Your Note',
+              value: booking.specialInstructions!,
           ),
+          ],
         ],
       ),
     );
@@ -189,6 +191,7 @@ class BookingConfirmationScreen extends StatelessWidget {
       ],
     );
   }
+
 
   Widget _buildActionButtons(BuildContext context, BookingProvider bookingProvider) {
     return Column(
@@ -280,7 +283,7 @@ class BookingConfirmationScreen extends StatelessWidget {
               ),
           const SizedBox(height: AppSpacing.space4),
           Text(
-            '• Contact the salon if you need to reschedule',
+            '• Changes can be made by contacting the salon directly',
             style: AppTypography.bodyMedium,
             ),
         ],
@@ -317,7 +320,7 @@ class BookingConfirmationScreen extends StatelessWidget {
     final monthName = months[date.month - 1];
     final dateStr = '$dayName, $monthName ${date.day}, ${date.year}';
     
-    return '$dateStr\nat $timeSlot';
+    return '$dateStr at $timeSlot';
   }
 
   void _goHome(BuildContext context) {

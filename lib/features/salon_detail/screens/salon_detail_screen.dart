@@ -364,10 +364,11 @@ class _SalonDetailScreenState extends State<SalonDetailScreen> {
     final double centeredPosition = targetPosition - (screenWidth / 2) + (buttonWidth / 2);
     final double clampedPosition = centeredPosition.clamp(0.0, maxScroll);
     
+    // Use a shorter duration to reduce animation conflicts
     _categoryScrollController.animateTo(
       clampedPosition,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOut,
     );
   }
 
@@ -1054,28 +1055,29 @@ class _SalonDetailScreenState extends State<SalonDetailScreen> {
                 
                 return GestureDetector(
                   onTap: () {
-                    // Calculate distance to determine animation approach
                     final currentIndex = _selectedServiceIndex;
                     final targetIndex = index;
                     final distance = (targetIndex - currentIndex).abs();
                     
-                    if (distance <= 1) {
-                      // Small jump - use smooth animation
                       setState(() {
                         _selectedServiceIndex = index;
                       });
+                    
+                    if (distance <= 1) {
+                      // Adjacent pages - use smooth animation
                       _servicePageController.animateToPage(
                         index,
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
+                        duration: const Duration(milliseconds: 250),
+                        curve: Curves.easeOut,
                       );
+                      // Removed immediate _scrollCategoryToIndex call here to avoid double scroll
                     } else {
-                      // Large jump - use instant jump to prevent animation issues
-                      setState(() {
-                        _selectedServiceIndex = index;
-                      });
+                      // Non-adjacent pages - use jumpToPage to avoid animation conflicts
                       _servicePageController.jumpToPage(index);
+                      // Scroll category buttons after short delay for large jumps
+                      Future.delayed(const Duration(milliseconds: 50), () {
                       _scrollCategoryToIndex(index);
+                      });
                     }
                   },
                   child: AnimatedContainer(
@@ -1179,12 +1181,15 @@ class _SalonDetailScreenState extends State<SalonDetailScreen> {
                   child: PageView.builder(
                     controller: _servicePageController,
                     itemCount: serviceCategories.length,
+                    physics: const PageScrollPhysics(parent: ClampingScrollPhysics()),
                     onPageChanged: (index) {
                       setState(() {
                         _selectedServiceIndex = index;
                       });
-                      // Scroll category buttons to show the selected category
+                      // Scroll category buttons with a slight delay to prevent conflicts
+                      Future.delayed(const Duration(milliseconds: 100), () {
                       _scrollCategoryToIndex(index);
+                      });
                     },
                     itemBuilder: (context, index) {
                       return _buildServicesList(serviceCategories[index]);
@@ -1517,31 +1522,53 @@ class _SalonDetailScreenState extends State<SalonDetailScreen> {
   }
 
   Widget _buildBottomBookButton() {
-    if (_selectedServices.isEmpty) {
-      // Show default state when no services selected
-      int totalServices = 0;
-      for (String category in serviceCategories) {
-        totalServices += _getServicesForCategory(category).length;
-      }
+    final totalPrice = _calculateTotalPrice();
+    final totalDuration = _selectedServices.isEmpty ? '—' : _calculateTotalDuration();
+    final serviceCount = _selectedServices.length;
+    final hasSelection = serviceCount > 0;
 
-      return Container(
+    return Container(
+      decoration: BoxDecoration(
         color: Colors.white,
-        child: Container(
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 8,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
           padding: EdgeInsets.only(
             left: 16,
             right: 16,
-            top: 12,
-            bottom: MediaQuery.of(context).padding.bottom + 1,
+            top: 6,
+            bottom: MediaQuery.of(context).padding.bottom + 6,
           ),
           child: Row(
             children: [
               Expanded(
                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
+                    // Fiyat veya boş alan
+                    if (hasSelection)
+                      Text(
+                        '\$${totalPrice.toStringAsFixed(0)}',
+                        style: AppTypography.titleLarge.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                    if (hasSelection) const SizedBox(height: 4),
+                    // Servis sayısı ve toplam süre
                     Text(
-                      '$totalServices services available',
+                      hasSelection
+                          ? '$serviceCount service${serviceCount > 1 ? 's' : ''} • $totalDuration'
+                          : '${_getTotalServiceCount()} services available',
                       style: AppTypography.bodyMedium.copyWith(
                         color: AppColors.textSecondary,
                         fontWeight: FontWeight.w500,
@@ -1552,18 +1579,18 @@ class _SalonDetailScreenState extends State<SalonDetailScreen> {
               ),
               const SizedBox(width: 16),
               ElevatedButton(
-                onPressed: null, // Disabled when no services selected
+                onPressed: hasSelection ? () { _showAppointmentTypeOptions(); } : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.textSecondary,
+                  backgroundColor: hasSelection ? AppColors.primary : AppColors.textSecondary,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   elevation: 0,
                 ),
                 child: Text(
-                  'Select services',
+                  hasSelection ? 'Devam et' : 'Randevu Al',
                   style: AppTypography.labelMedium.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
@@ -1573,76 +1600,15 @@ class _SalonDetailScreenState extends State<SalonDetailScreen> {
             ],
           ),
         ),
-      );
-    }
+      ),
+    );
+  }
 
-    // Show selected services when services are selected
-    final totalPrice = _calculateTotalPrice();
-    final totalDuration = _calculateTotalDuration();
-    
-    return Container(
-      color: Colors.white,
-      child: Container(
-        padding: EdgeInsets.only(
-          left: 16,
-          right: 16,
-          top: 12,
-          bottom: MediaQuery.of(context).padding.bottom + 12,
-        ),
-        child: 
-            // Price and summary layout matching the provided image
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Total price prominently displayed at top left (like "RON 600")
-                      Text(
-                        '\$${totalPrice.toStringAsFixed(0)}',
-                        style: AppTypography.headlineMedium.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      // Service count and total duration (like "2 services • 2 hrs, 30 mins")
-                      Text(
-                        '${_selectedServices.length} service${_selectedServices.length > 1 ? 's' : ''} • $totalDuration',
-                        style: AppTypography.bodyMedium.copyWith(
-                          color: AppColors.textSecondary,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 16),
-                ElevatedButton(
-                  onPressed: () {
-                    _showAppointmentTypeOptions();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: Text(
-                    'Continue',
-                    style: AppTypography.labelMedium.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-        ),
-      );
+  int _getTotalServiceCount() {
+    int total = 0;
+    for (String category in serviceCategories) {
+      total += _getServicesForCategory(category).length;
+    }
+    return total;
   }
 } 

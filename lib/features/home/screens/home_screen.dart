@@ -187,7 +187,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _onCategorySelected(int index) {
-    // Calculate distance to determine animation approach
     final currentIndex = _currentCategoryIndex;
     final targetIndex = index;
     final distance = (targetIndex - currentIndex).abs();
@@ -198,21 +197,20 @@ class _HomeScreenState extends State<HomeScreen> {
     });
     
     if (distance <= 1) {
-      // Small jump - use smooth animation
+      // Adjacent pages - use smooth animation
       _categoryPageController.animateToPage(
         index,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOut,
       );
-      
-      // Scroll category chip into view with a slight delay to prevent conflicts
+      // Removed immediate _scrollCategoryChipIntoView call here to avoid double scroll
+    } else {
+      // Non-adjacent pages - use jumpToPage to avoid animation conflicts
+      _categoryPageController.jumpToPage(index);
+      // Scroll category buttons after short delay for large jumps
       Future.delayed(const Duration(milliseconds: 50), () {
         _scrollCategoryChipIntoView(index);
       });
-    } else {
-      // Large jump - use instant jump to prevent animation issues
-      _categoryPageController.jumpToPage(index);
-      _scrollCategoryChipIntoView(index);
     }
   }
 
@@ -222,8 +220,10 @@ class _HomeScreenState extends State<HomeScreen> {
       selectedCategory = allCategories[index];
     });
 
-    // Scroll category chip into view when swiping
-    _scrollCategoryChipIntoView(index);
+    // Scroll category chip into view with a slight delay to prevent conflicts
+    Future.delayed(const Duration(milliseconds: 100), () {
+      _scrollCategoryChipIntoView(index);
+    });
   }
 
   double _calculateTextWidth(String text) {
@@ -292,8 +292,8 @@ class _HomeScreenState extends State<HomeScreen> {
     
     _categoryScrollController.animateTo(
       finalScroll,
-      duration: const Duration(milliseconds: 280),
-      curve: Curves.easeOutCubic,
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOut,
     );
   }
 

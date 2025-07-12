@@ -157,6 +157,12 @@ class BookingProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  // Special instructions/note
+  void setSpecialInstructions(String instructions) {
+    _booking = _booking.copyWith(specialInstructions: instructions);
+    notifyListeners();
+  }
+
   // Set salon info (for when booking from different salons)
   void setSalonInfo({
     required String providerId,

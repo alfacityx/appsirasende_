@@ -3,11 +3,31 @@ import 'package:provider/provider.dart';
 import '../../../core/theme/theme.dart';
 import '../providers/booking_provider.dart';
 import '../widgets/booking_app_bar.dart';
+import '../widgets/booking_button.dart';
 
 import 'booking_confirmation_screen.dart';
 
-class AppointmentSummaryScreen extends StatelessWidget {
+class AppointmentSummaryScreen extends StatefulWidget {
   const AppointmentSummaryScreen({super.key});
+
+  @override
+  State<AppointmentSummaryScreen> createState() => _AppointmentSummaryScreenState();
+}
+
+class _AppointmentSummaryScreenState extends State<AppointmentSummaryScreen> {
+  late TextEditingController _noteController;
+
+  @override
+  void initState() {
+    super.initState();
+    _noteController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _noteController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,38 +63,16 @@ class AppointmentSummaryScreen extends StatelessWidget {
                       _buildSummaryCard(context, booking),
                       const SizedBox(height: AppSpacing.space24),
                       
-                      _buildImportantInfo(),
+                      _buildCustomerNoteSection(),
                     ],
                   ),
                 ),
               ),
             ],
           ),
-          bottomNavigationBar: Container(
-            color: Colors.white,
-            child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: ElevatedButton(
+          bottomNavigationBar: BookingFloatingButton(
+            text: 'Confirm Appointment',
                   onPressed: () => _confirmAppointment(context, bookingProvider),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Text(
-                    'Confirm Appointment',
-                    style: AppTypography.titleMedium.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-            ),
           ),
         );
       },
@@ -139,14 +137,6 @@ class AppointmentSummaryScreen extends StatelessWidget {
             label: 'Date & Time',
             value: _getDateTimeDetails(booking),
           ),
-          
-          const Divider(height: 32),
-          
-          _buildDetailRow(
-            icon: Icons.location_on,
-            label: 'Address',
-            value: booking.providerAddress,
-          ),
         ],
       ),
     );
@@ -199,48 +189,91 @@ class AppointmentSummaryScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildImportantInfo() {
+  Widget _buildCustomerNoteSection() {
     return Container(
       width: double.infinity,
       padding: AppSpacing.cardPaddingAll,
       decoration: BoxDecoration(
-        color: AppColors.warning.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.warning.withOpacity(0.3)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(
-                Icons.schedule,
-                color: AppColors.warning,
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.note_add,
+                  color: AppColors.primary,
                 size: 20,
+                ),
               ),
-              const SizedBox(width: AppSpacing.space8),
+              const SizedBox(width: AppSpacing.space12),
               Text(
-                'Before You Confirm',
+                'Add a Note (Optional)',
                 style: AppTypography.titleMedium.copyWith(
-                  color: AppColors.warning,
                   fontWeight: FontWeight.w600,
                 ),
               ),
             ],
           ),
+          const SizedBox(height: AppSpacing.space16),
+          Text(
+            'Share any special requests or information with the salon',
+            style: AppTypography.bodyMedium.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
           const SizedBox(height: AppSpacing.space12),
-          Text(
-            '• Please arrive 10 minutes before your appointment',
-            style: AppTypography.bodyMedium,
+          TextField(
+            controller: _noteController,
+            maxLines: 4,
+            maxLength: 300,
+            decoration: InputDecoration(
+              hintText: 'e.g., I have sensitive skin, please use gentle products...',
+              hintStyle: AppTypography.bodyMedium.copyWith(
+                color: AppColors.textSecondary.withOpacity(0.7),
           ),
-          const SizedBox(height: AppSpacing.space4),
-          Text(
-            '• Payment will be handled at the venue',
-            style: AppTypography.bodyMedium,
-          ),
-          const SizedBox(height: AppSpacing.space4),
-          Text(
-            '• Changes can be made by contacting the salon directly',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: AppColors.border,
+                  width: 1,
+                ),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: AppColors.border,
+                  width: 1,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: AppColors.primary,
+                  width: 2,
+                ),
+              ),
+              contentPadding: const EdgeInsets.all(16),
+              counterStyle: AppTypography.bodySmall.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
             style: AppTypography.bodyMedium,
           ),
         ],
@@ -283,6 +316,11 @@ class AppointmentSummaryScreen extends StatelessWidget {
 
 
   Future<void> _confirmAppointment(BuildContext context, BookingProvider bookingProvider) async {
+    // Save customer note if provided
+    if (_noteController.text.trim().isNotEmpty) {
+      bookingProvider.setSpecialInstructions(_noteController.text.trim());
+    }
+
     // Show loading state
     showDialog(
       context: context,
