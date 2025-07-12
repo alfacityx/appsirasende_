@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/theme.dart';
+import '../screens/full_gallery_screen.dart' show ImageViewerScreen;
 
 class GalleryTab extends StatelessWidget {
   final List<String> images;
@@ -88,76 +89,6 @@ class GalleryTab extends StatelessWidget {
           images: images,
           initialIndex: initialIndex,
         ),
-      ),
-    );
-  }
-}
-
-class ImageViewerScreen extends StatefulWidget {
-  final List<String> images;
-  final int initialIndex;
-
-  const ImageViewerScreen({
-    super.key,
-    required this.images,
-    required this.initialIndex,
-  });
-
-  @override
-  State<ImageViewerScreen> createState() => _ImageViewerScreenState();
-}
-
-class _ImageViewerScreenState extends State<ImageViewerScreen> {
-  late PageController _pageController;
-  late int _currentIndex;
-
-  @override
-  void initState() {
-    super.initState();
-    _currentIndex = widget.initialIndex;
-    _pageController = PageController(initialPage: widget.initialIndex);
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-        title: Text(
-          '${_currentIndex + 1} of ${widget.images.length}',
-          style: const TextStyle(color: Colors.white),
-        ),
-      ),
-      body: PageView.builder(
-        controller: _pageController,
-        onPageChanged: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        itemCount: widget.images.length,
-        itemBuilder: (context, index) {
-          return Center(
-            child: Container(
-              color: AppColors.surface,
-              child: const Center(
-                child: Icon(
-                  Icons.image,
-                  color: AppColors.textSecondary,
-                  size: 100,
-                ),
-              ),
-            ),
-          );
-        },
       ),
     );
   }

@@ -20,15 +20,51 @@ class ReviewsTab extends StatefulWidget {
 }
 
 class _ReviewsTabState extends State<ReviewsTab> {
+  // Local state for like functionality
+  Set<String> likedReviews = {};
+  Map<String, int> likeCounts = {};
+
+  @override
+  void initState() {
+    super.initState();
+    
+    // Initialize like counts from reviews
+    for (var review in widget.reviews) {
+      likeCounts[review.id] = review.likes;
+    }
+  }
+
+  void _toggleLike(String reviewId) {
+    setState(() {
+      if (likedReviews.contains(reviewId)) {
+        // Unlike
+        likedReviews.remove(reviewId);
+        likeCounts[reviewId] = (likeCounts[reviewId] ?? 0) - 1;
+      } else {
+        // Like
+        likedReviews.add(reviewId);
+        likeCounts[reviewId] = (likeCounts[reviewId] ?? 0) + 1;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Show only first 2 reviews initially
-    final displayedReviews = widget.reviews.take(2).toList();
+    // Calculate average rating and review count from the reviews list
+    final reviewCount = widget.reviews.length;
+    final averageRating = reviewCount == 0
+        ? 0.0
+        : widget.reviews.map((r) => r.rating).reduce((a, b) => a + b) / reviewCount;
+
+    // Show all reviews if 3 or fewer, otherwise show only first 2
+    final displayedReviews = reviewCount <= 3
+        ? widget.reviews
+        : widget.reviews.take(2).toList();
     
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _buildHeader(),
+        _buildHeader(averageRating, reviewCount),
         const SizedBox(height: AppSpacing.space20),
         // Dynamic height based on number of displayed reviews
         ...displayedReviews.map((review) {
@@ -41,7 +77,7 @@ class _ReviewsTabState extends State<ReviewsTab> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(double averageRating, int reviewCount) {
     return Row(
       children: [
         Icon(
@@ -51,14 +87,14 @@ class _ReviewsTabState extends State<ReviewsTab> {
         ),
         const SizedBox(width: AppSpacing.space8),
         Text(
-          '${widget.overallRating} (${widget.reviews.length} reviews)',
+          '${averageRating.toStringAsFixed(1)} ($reviewCount review${reviewCount == 1 ? '' : 's'})',
           style: AppTypography.titleLarge.copyWith(
             fontWeight: FontWeight.w600,
             fontSize: 18,
           ),
         ),
         const Spacer(),
-        if (widget.reviews.length > 2) // Only show if there are more than 2 reviews
+        if (reviewCount > 2) // Only show if there are more than 2 reviews
           GestureDetector(
             onTap: () {
               Navigator.push(
@@ -66,7 +102,7 @@ class _ReviewsTabState extends State<ReviewsTab> {
                 MaterialPageRoute(
                   builder: (context) => FullReviewsScreen(
                     reviews: widget.reviews,
-                    overallRating: widget.overallRating,
+                    overallRating: averageRating,
                     salonName: widget.salonName,
                   ),
                 ),
@@ -85,6 +121,8 @@ class _ReviewsTabState extends State<ReviewsTab> {
   }
 
   Widget _buildReviewCard(SalonReview review) {
+    final isLiked = likedReviews.contains(review.id);
+    final likeCount = likeCounts[review.id] ?? 0;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -130,38 +168,17 @@ class _ReviewsTabState extends State<ReviewsTab> {
                           ),
                         ),
                       ),
-                      // Star rating pill
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: AppColors.primary.withOpacity(0.3),
-                            width: 1,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.star,
-                              color: AppColors.primary,
-                              size: 14,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              review.rating.toInt().toString(),
-                              style: AppTypography.labelMedium.copyWith(
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
+                      // Star rating row (replaces pill)
+                      Row(
+                        children: List.generate(5, (index) {
+                          return Icon(
+                            index < review.rating.round()
+                                ? Icons.star
+                                : Icons.star_border,
+                            color: AppColors.star,
+                            size: 18,
+                          );
+                        }),
                       ),
                       const SizedBox(width: 8),
                       // More options
@@ -196,18 +213,18 @@ class _ReviewsTabState extends State<ReviewsTab> {
                     children: [
                       GestureDetector(
                         onTap: () {
-                          // Handle like
+                          _toggleLike(review.id);
                         },
                         child: Row(
                           children: [
                             Icon(
-                              Icons.favorite,
-                              color: AppColors.error,
+                              isLiked ? Icons.favorite : Icons.favorite_border,
+                              color: isLiked ? AppColors.error : AppColors.textSecondary,
                               size: 16,
                             ),
                             const SizedBox(width: AppSpacing.space8),
                             Text(
-                              review.likes.toString(),
+                              likeCount.toString(),
                               style: AppTypography.labelMedium.copyWith(
                                 color: AppColors.textSecondary,
                                 fontSize: 13,

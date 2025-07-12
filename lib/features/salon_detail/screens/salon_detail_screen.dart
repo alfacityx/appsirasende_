@@ -10,6 +10,8 @@ import '../tabs/about_tab.dart';
 import '../tabs/reviews_tab.dart';
 import '../../booking/screens/selected_services_screen.dart';
 import 'full_gallery_screen.dart' show FullGalleryScreen, ImageViewerScreen;
+import 'package:provider/provider.dart';
+import '../../bookmarks/providers/bookmarks_provider.dart';
 
 class SalonDetailScreen extends StatefulWidget {
   final Salon salon;
@@ -41,8 +43,6 @@ class _SalonDetailScreenState extends State<SalonDetailScreen> {
   final GlobalKey _galleryKey = GlobalKey();
   final GlobalKey _reviewsKey = GlobalKey();
   final GlobalKey _aboutKey = GlobalKey();
-  
-  final List<String> sectionTabs = ['Services', 'Reviews', 'Gallery', 'About'];
   
   final List<String> serviceCategories = [
     'Featured',
@@ -175,6 +175,24 @@ class _SalonDetailScreenState extends State<SalonDetailScreen> {
       ],
       reviews: [
         SalonReview(
+          id: '5',
+          userName: 'Jamie Lee',
+          userImageUrl: 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80',
+          rating: 1.0,
+          comment: 'Very disappointed. The staff was not attentive and the place was not clean.',
+          date: DateTime.now().subtract(const Duration(days: 1)),
+          likes: 0,
+        ),
+        SalonReview(
+          id: '4',
+          userName: 'Alex Martinez',
+          userImageUrl: 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80',
+          rating: 1.0,
+          comment: 'I was disappointed with my visit. The service did not meet my expectations.',
+          date: DateTime.now().subtract(const Duration(days: 3)),
+          likes: 1,
+        ),
+        SalonReview(
           id: '1',
           userName: 'Sarah Wilson',
           userImageUrl: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80',
@@ -182,24 +200,6 @@ class _SalonDetailScreenState extends State<SalonDetailScreen> {
           comment: 'Amazing experience! The staff is professional and the ambiance is perfect.',
           date: DateTime.now().subtract(const Duration(days: 7)),
           likes: 23,
-        ),
-        SalonReview(
-          id: '2',
-          userName: 'Mike Johnson',
-          userImageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80',
-          rating: 5.0,
-          comment: 'Best massage I\'ve ever had. Will definitely come back.',
-          date: DateTime.now().subtract(const Duration(days: 14)),
-          likes: 18,
-        ),
-        SalonReview(
-          id: '3',
-          userName: 'Emma Davis',
-          userImageUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80',
-          rating: 4.0,
-          comment: 'Clean facilities and friendly service. Highly recommended!',
-          date: DateTime.now().subtract(const Duration(days: 21)),
-          likes: 12,
         ),
       ],
     );
@@ -473,13 +473,13 @@ class _SalonDetailScreenState extends State<SalonDetailScreen> {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       curve: Curves.easeInOut,
-      width: 40,
-      height: 40,
+      width: 28,
+      height: 28,
       decoration: BoxDecoration(
         color: isSelected 
             ? Colors.green.shade500
             : AppColors.primary,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(6),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
@@ -491,7 +491,7 @@ class _SalonDetailScreenState extends State<SalonDetailScreen> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(6),
           onTap: () {
             if (isSelected) {
               // Find and remove the selected service
@@ -522,7 +522,7 @@ class _SalonDetailScreenState extends State<SalonDetailScreen> {
                 isSelected ? Icons.check : Icons.add,
                 key: ValueKey(isSelected),
                 color: Colors.white,
-                size: 20,
+                size: 16,
               ),
             ),
           ),
@@ -738,7 +738,7 @@ class _SalonDetailScreenState extends State<SalonDetailScreen> {
               opacity: _showStickyHeader ? 1.0 : 0.0,
               child: Column(
                 children: [
-                  // Top section: Back button + Business name + action buttons
+                  // Top section: Back button + Business name
                   Container(
                     height: 48,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -768,41 +768,6 @@ class _SalonDetailScreenState extends State<SalonDetailScreen> {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                        // Action buttons
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              decoration: BoxDecoration(
-                                color: AppColors.background,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: IconButton(
-                                icon: const Icon(Icons.share_outlined),
-                                iconSize: 20,
-                                color: AppColors.textPrimary,
-                                onPressed: () {
-                                  // Share functionality
-                                },
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              decoration: BoxDecoration(
-                                color: AppColors.background,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: IconButton(
-                                icon: const Icon(Icons.bookmark_outline),
-                                iconSize: 20,
-                                color: AppColors.textPrimary,
-                                onPressed: () {
-                                  // Save/bookmark functionality
-                                },
-                              ),
-                            ),
-                          ],
                         ),
                       ],
                     ),
@@ -863,17 +828,36 @@ class _SalonDetailScreenState extends State<SalonDetailScreen> {
       children: [
         HeroImageCarousel(
           images: salonDetail.heroImages,
-          height: 300,
+          height: 280,
+          onImageTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ImageViewerScreen(
+                  images: salonDetail.heroImages,
+                  initialIndex: 0,
+                ),
+              ),
+            );
+          },
         ),
         SafeArea(
           child: Padding(
             padding: AppSpacing.all16,
             child: Row(
               children: [
+                // Left: Modern circular back button
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.3),
-                    borderRadius: BorderRadius.circular(20),
+                    color: Colors.white.withOpacity(0.18),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.08),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: IconButton(
                     icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -881,15 +865,36 @@ class _SalonDetailScreenState extends State<SalonDetailScreen> {
                   ),
                 ),
                 const Spacer(),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.3),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: IconButton(
-                    icon: const Icon(Icons.more_horiz, color: Colors.white),
-                    onPressed: () {},
-                  ),
+                // Right: Modern circular favorite button (connected to BookmarksProvider)
+                Consumer<BookmarksProvider>(
+                  builder: (context, bookmarksProvider, _) {
+                    final isFavorite = bookmarksProvider.isBookmarked(widget.salon);
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.18),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.08),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: IconButton(
+                        icon: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 250),
+                          transitionBuilder: (child, animation) => ScaleTransition(scale: animation, child: child),
+                          child: isFavorite
+                              ? const Icon(Icons.favorite, key: ValueKey('filled'), color: Colors.redAccent)
+                              : const Icon(Icons.favorite_border, key: ValueKey('border'), color: Colors.white),
+                        ),
+                        onPressed: () {
+                          bookmarksProvider.toggleBookmark(widget.salon);
+                        },
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
@@ -1554,7 +1559,6 @@ class _SalonDetailScreenState extends State<SalonDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Fiyat veya boş alan
                     if (hasSelection)
                       Text(
                         '\$${totalPrice.toStringAsFixed(0)}',
@@ -1564,7 +1568,6 @@ class _SalonDetailScreenState extends State<SalonDetailScreen> {
                         ),
                       ),
                     if (hasSelection) const SizedBox(height: 4),
-                    // Servis sayısı ve toplam süre
                     Text(
                       hasSelection
                           ? '$serviceCount service${serviceCount > 1 ? 's' : ''} • $totalDuration'

@@ -23,6 +23,10 @@ class _FullReviewsScreenState extends State<FullReviewsScreen> {
   String sortBy = 'Latest';
   late ScrollController _scrollController;
   
+  // Local state for like functionality
+  Set<String> likedReviews = {};
+  Map<String, int> likeCounts = {};
+  
   List<SalonReview> get filteredReviews {
     List<SalonReview> filtered = widget.reviews;
     
@@ -63,12 +67,31 @@ class _FullReviewsScreenState extends State<FullReviewsScreen> {
   void initState() {
     super.initState();
     _scrollController = ScrollController();
+    
+    // Initialize like counts from reviews
+    for (var review in widget.reviews) {
+      likeCounts[review.id] = review.likes;
+    }
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
     super.dispose();
+  }
+
+  void _toggleLike(String reviewId) {
+    setState(() {
+      if (likedReviews.contains(reviewId)) {
+        // Unlike
+        likedReviews.remove(reviewId);
+        likeCounts[reviewId] = (likeCounts[reviewId] ?? 0) - 1;
+      } else {
+        // Like
+        likedReviews.add(reviewId);
+        likeCounts[reviewId] = (likeCounts[reviewId] ?? 0) + 1;
+      }
+    });
   }
 
   Future<void> _handleRefresh() async {
@@ -306,40 +329,42 @@ class _FullReviewsScreenState extends State<FullReviewsScreen> {
   }
 
   Widget _buildReviewCard(SalonReview review) {
+    final isLiked = likedReviews.contains(review.id);
+    final likeCount = likeCounts[review.id] ?? 0;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Profile image/avatar
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                AppColors.primary.withOpacity(0.8),
-                AppColors.primary,
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+          // Profile image/avatar
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.primary.withOpacity(0.8),
+                  AppColors.primary,
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(20),
             ),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Center(
-            child: Text(
-              review.userName.isNotEmpty ? review.userName[0].toUpperCase() : 'U',
-              style: AppTypography.titleMedium.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
+            child: Center(
+              child: Text(
+                review.userName.isNotEmpty ? review.userName[0].toUpperCase() : 'U',
+                style: AppTypography.titleMedium.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ),
-        ),
-        const SizedBox(width: 12),
-        // Review content
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+          const SizedBox(width: 12),
+          // Review content
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
               // User name and rating
               Row(
                 children: [
@@ -351,30 +376,17 @@ class _FullReviewsScreenState extends State<FullReviewsScreen> {
                       ),
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: AppColors.star.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.star,
-                          color: AppColors.star,
-                          size: 14,
-                        ),
-                        const SizedBox(width: 2),
-                        Text(
-                          review.rating.toString(),
-                          style: AppTypography.labelSmall.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                      ],
-                    ),
+                  // Star rating row (replaces pill)
+                  Row(
+                    children: List.generate(5, (index) {
+                      return Icon(
+                        index < review.rating.round()
+                            ? Icons.star
+                            : Icons.star_border,
+                        color: AppColors.star,
+                        size: 18,
+                      );
+                    }),
                   ),
                 ],
               ),
@@ -391,21 +403,24 @@ class _FullReviewsScreenState extends State<FullReviewsScreen> {
               // Like button and date
               Row(
                 children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.favorite_border,
-                        color: AppColors.textSecondary,
-                        size: 16,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${(review.rating * 100).toInt()}', // Mock like count
-                        style: AppTypography.labelSmall.copyWith(
-                          color: AppColors.textSecondary,
+                  GestureDetector(
+                    onTap: () => _toggleLike(review.id),
+                    child: Row(
+                      children: [
+                        Icon(
+                          isLiked ? Icons.favorite : Icons.favorite_border,
+                          color: isLiked ? AppColors.error : AppColors.textSecondary,
+                          size: 16,
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 4),
+                        Text(
+                          likeCount.toString(),
+                          style: AppTypography.labelSmall.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   const Spacer(),
                   Text(

@@ -5,11 +5,13 @@ import '../../../core/theme/theme.dart';
 class HeroImageCarousel extends StatefulWidget {
   final List<String> images;
   final double height;
+  final VoidCallback? onImageTap;
 
   const HeroImageCarousel({
     super.key,
     required this.images,
     this.height = 300,
+    this.onImageTap,
   });
 
   @override
@@ -72,6 +74,9 @@ class _HeroImageCarouselState extends State<HeroImageCarousel> {
             onTap: () {
               _stopAutoScroll();
               Future.delayed(const Duration(seconds: 2), () => _resumeAutoScroll());
+              if (widget.onImageTap != null) {
+                widget.onImageTap!();
+              }
             },
             child: PageView.builder(
               controller: _pageController,
