@@ -905,6 +905,12 @@ class _SalonDetailScreenState extends State<SalonDetailScreen> {
   }
 
   Widget _buildSalonInfo() {
+    // Calculate average rating and review count from reviews
+    final reviews = salonDetail.reviews;
+    final reviewCount = reviews.length;
+    final averageRating = reviewCount > 0
+        ? (reviews.map((r) => r.rating).reduce((a, b) => a + b) / reviewCount)
+        : 0.0;
     return Padding(
       padding: AppSpacing.all24,
       child: Column(
@@ -963,7 +969,7 @@ class _SalonDetailScreenState extends State<SalonDetailScreen> {
               ),
               const SizedBox(width: AppSpacing.space4),
               Text(
-                '${salonDetail.rating} (${salonDetail.reviewCount} reviews)',
+                '${averageRating.toStringAsFixed(1)} ($reviewCount reviews)',
                 style: AppTypography.bodyMedium,
               ),
             ],

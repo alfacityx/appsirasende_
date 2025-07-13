@@ -157,6 +157,7 @@ class StaffCard extends StatelessWidget {
   final bool isAvailable;
   final bool isSelected;
   final VoidCallback? onTap;
+  final String? busyLabel;
 
   const StaffCard({
     super.key,
@@ -167,13 +168,14 @@ class StaffCard extends StatelessWidget {
     this.isAvailable = true,
     this.isSelected = false,
     this.onTap,
+    this.busyLabel,
   });
 
   @override
   Widget build(BuildContext context) {
     return BookingCard(
       isSelected: isSelected,
-      isEnabled: isAvailable,
+      isEnabled: true,
       onTap: onTap,
       child: Row(
         children: [
@@ -234,9 +236,9 @@ class StaffCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                isAvailable ? 'Available' : 'Busy today',
+                busyLabel ?? 'Available',
                 style: AppTypography.bodySmall.copyWith(
-                  color: isAvailable ? AppColors.available : AppColors.busy,
+                  color: busyLabel != null ? AppColors.busy : AppColors.available,
                 ),
               ),
               const SizedBox(height: AppSpacing.space8),

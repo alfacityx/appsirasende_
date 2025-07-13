@@ -16,15 +16,11 @@ class BookingConfirmationScreen extends StatelessWidget {
         
         return Scaffold(
           backgroundColor: AppColors.background,
-          appBar: const BookingAppBar(
-            title: 'Appointment Confirmed',
-            showBackButton: false,
-          ),
           body: SingleChildScrollView(
             padding: AppSpacing.screenPadding,
             child: Column(
               children: [
-                const SizedBox(height: AppSpacing.space32),
+                const SizedBox(height: AppSpacing.space64),
                 _buildSuccessIcon(),
                 const SizedBox(height: AppSpacing.space24),
                 _buildSuccessMessage(),
@@ -176,8 +172,8 @@ class BookingConfirmationScreen extends StatelessWidget {
                 label,
                 style: AppTypography.labelMedium.copyWith(
                   color: AppColors.textSecondary,
-          ),
-        ),
+                ),
+              ),
               const SizedBox(height: AppSpacing.space4),
               Text(
                 value,
@@ -206,7 +202,7 @@ class BookingConfirmationScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
-        ),
+              ),
             ),
             child: Text(
               'Done',
@@ -217,27 +213,6 @@ class BookingConfirmationScreen extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: AppSpacing.space12),
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton(
-            onPressed: () => _bookAnother(context, bookingProvider),
-            style: OutlinedButton.styleFrom(
-              side: BorderSide(color: AppColors.primary),
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: Text(
-              'Book Another Appointment',
-              style: AppTypography.titleMedium.copyWith(
-                color: AppColors.primary,
-                fontWeight: FontWeight.w600,
-            ),
-            ),
-        ),
-      ),
       ],
     );
   }

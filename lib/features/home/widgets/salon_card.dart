@@ -127,7 +127,7 @@ class SalonCard extends StatelessWidget {
                             ),
                             const SizedBox(width: AppSpacing.space4),
                             Text(
-                              salon.rating.toString(),
+                              salon.rating.toStringAsFixed(1),
                               style: AppTypography.labelSmall,
                             ),
                           ],

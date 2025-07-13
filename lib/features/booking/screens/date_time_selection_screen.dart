@@ -156,6 +156,46 @@ class _DateTimeSelectionScreenState extends State<DateTimeSelectionScreen> {
   Widget _buildTimeSelection(BookingProvider bookingProvider, DateTime selectedDate) {
     final availableTimeSlots = bookingProvider.availableTimeSlots;
     final selectedTimeSlot = bookingProvider.booking.selectedTimeSlot;
+    final selectedStaff = bookingProvider.booking.selectedStaff;
+
+    // Demo: If Mike Rodriguez and Monday, show full message and no slots
+    if (selectedStaff != null &&
+        selectedStaff.fullName == 'Mike Rodriguez' &&
+        selectedDate.weekday == DateTime.monday) {
+      return Container(
+        margin: AppSpacing.screenPaddingHorizontal,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Available Times for  ${_formatSelectedDate(selectedDate)}',
+              style: AppTypography.titleLarge,
+            ),
+            const SizedBox(height: AppSpacing.space16),
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceVariant,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, color: AppColors.busy),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'All appointments are full for this staff member on Mondays. Please select another day.',
+                      style: AppTypography.bodyMedium.copyWith(color: AppColors.busy),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.space16),
+          ],
+        ),
+      );
+    }
 
     return Container(
       margin: AppSpacing.screenPaddingHorizontal,
@@ -163,7 +203,7 @@ class _DateTimeSelectionScreenState extends State<DateTimeSelectionScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Available Times for ${_formatSelectedDate(selectedDate)}',
+            'Available Times for  ${_formatSelectedDate(selectedDate)}',
             style: AppTypography.titleLarge,
           ),
           const SizedBox(height: AppSpacing.space16),
@@ -175,11 +215,12 @@ class _DateTimeSelectionScreenState extends State<DateTimeSelectionScreen> {
               itemBuilder: (context, index) {
                 final timeSlot = availableTimeSlots[index];
                 final isSelected = selectedTimeSlot == timeSlot;
-                
+                // Mark time slots after 12:00 PM as unavailable for demonstration
+                final isAvailable = _isTimeSlotAvailable(timeSlot);
                 return TimeSlotCard(
                   time: timeSlot,
                   isSelected: isSelected,
-                  isAvailable: true,
+                  isAvailable: isAvailable,
                   onTap: () => bookingProvider.selectTimeSlot(timeSlot),
                 );
               },
@@ -189,6 +230,17 @@ class _DateTimeSelectionScreenState extends State<DateTimeSelectionScreen> {
         ],
       ),
     );
+  }
+
+  // Helper to determine if a time slot is available (demo: after 12:00 PM is unavailable)
+  bool _isTimeSlotAvailable(String timeSlot) {
+    if (timeSlot.contains('PM')) {
+      final hour = int.tryParse(timeSlot.split(':')[0]) ?? 0;
+      if (hour > 12 || hour == 12) {
+        return false;
+      }
+    }
+    return true;
   }
 
   String _formatNextAvailable(DateTime dateTime) {
@@ -232,9 +284,26 @@ class _DateTimeSelectionScreenState extends State<DateTimeSelectionScreen> {
   }
 
   void _selectNextAvailable(BookingProvider bookingProvider, DateTime nextAvailable) {
-    final date = DateTime(nextAvailable.year, nextAvailable.month, nextAvailable.day);
-    final timeSlot = _formatTime(nextAvailable);
-    
+    final selectedStaff = bookingProvider.booking.selectedStaff;
+    DateTime date = DateTime(nextAvailable.year, nextAvailable.month, nextAvailable.day);
+    String timeSlot = _formatTime(nextAvailable);
+
+    // For Mike Rodriguez, skip Mondays
+    if (selectedStaff != null && selectedStaff.fullName == 'Mike Rodriguez') {
+      // Find the next non-Monday date
+      final availableDates = bookingProvider.getAvailableDates();
+      for (final d in availableDates) {
+        if (d.weekday != DateTime.monday) {
+          date = d;
+          break;
+        }
+      }
+      // Use the first available time slot
+      if (bookingProvider.availableTimeSlots.isNotEmpty) {
+        timeSlot = bookingProvider.availableTimeSlots.first;
+      }
+    }
+
     bookingProvider.selectDate(date);
     bookingProvider.selectTimeSlot(timeSlot);
   }

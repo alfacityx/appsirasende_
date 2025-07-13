@@ -41,7 +41,25 @@ class StaffSelectionScreen extends StatelessWidget {
                     children: [
                       _buildAnyAvailableOption(bookingProvider),
                       const SizedBox(height: AppSpacing.space24),
-                      _buildOurTeamSection(bookingProvider),
+                      // Replacing with direct rendering of team members
+                      ...bookingProvider.availableStaff
+                          .where((staff) => staff.id != 'any_available')
+                          .map((staff) {
+                        final selectedStaff = bookingProvider.booking.selectedStaff;
+                        final isSelected = selectedStaff?.id == staff.id;
+                        final selectedDate = bookingProvider.booking.selectedDate;
+                        final isBusy = isStaffFullyBookedForDate(staff, selectedDate);
+                        return StaffCard(
+                          name: staff.fullName,
+                          title: staff.displayTitle,
+                          rating: staff.rating,
+                          reviewCount: staff.reviewCount,
+                          isAvailable: true,
+                          isSelected: isSelected,
+                          onTap: () => bookingProvider.selectStaff(staff),
+                          busyLabel: isBusy ? 'Busy' : null,
+                        );
+                      }),
                     ],
                   ),
                 ),
@@ -119,38 +137,6 @@ class StaffSelectionScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildOurTeamSection(BookingProvider bookingProvider) {
-    final teamMembers = bookingProvider.availableStaff
-        .where((staff) => staff.id != 'any_available')
-        .toList();
-    final selectedStaff = bookingProvider.booking.selectedStaff;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Our Team',
-          style: AppTypography.titleLarge,
-        ),
-        const SizedBox(height: AppSpacing.space16),
-        ...teamMembers.map((staff) {
-          final isSelected = selectedStaff?.id == staff.id;
-          return StaffCard(
-            name: staff.fullName,
-            title: staff.displayTitle,
-            rating: staff.rating,
-            reviewCount: staff.reviewCount,
-            isAvailable: staff.isAvailable,
-            isSelected: isSelected,
-            onTap: staff.isAvailable 
-                ? () => bookingProvider.selectStaff(staff)
-                : null,
-          );
-        }),
-      ],
-    );
-  }
-
   void _navigateToDateTime(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -158,4 +144,13 @@ class StaffSelectionScreen extends StatelessWidget {
       ),
     );
   }
+} 
+
+bool isStaffFullyBookedForDate(staff, DateTime? date) {
+  if (staff.fullName == 'Mike Rodriguez' && date != null && date.weekday == DateTime.monday) {
+    // Demo: Mike is fully booked on Mondays
+    return true;
+  }
+  // For real data, check booked slots here
+  return false;
 } 

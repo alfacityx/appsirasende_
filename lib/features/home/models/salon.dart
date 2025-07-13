@@ -1,3 +1,5 @@
+import '../../salon_detail/models/salon_detail.dart';
+
 class Salon {
   final String id;
   final String name;

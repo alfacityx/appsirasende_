@@ -173,7 +173,7 @@ class _FullReviewsScreenState extends State<FullReviewsScreen> {
               ),
               const SizedBox(width: 4),
               Text(
-                '${widget.overallRating} (${widget.reviews.length} reviews)',
+                '${widget.overallRating.toStringAsFixed(1)} (${widget.reviews.length} reviews)',
                 style: AppTypography.titleMedium.copyWith(
                   fontWeight: FontWeight.w600,
                   color: AppColors.textPrimary,

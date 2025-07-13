@@ -60,7 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
 
   final List<Salon> nearbySalons = [
-    const Salon(
+    Salon(
       id: '1',
       name: 'Belle Curls',
       address: '0993 Novick Parkway',
@@ -69,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
       distance: 1.2,
       categories: ['Haircuts', 'Make up'],
     ),
-    const Salon(
+    Salon(
       id: '2',
       name: 'Barbarella Salon',
       address: '0570 Ruskin Pass',
@@ -78,7 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
       distance: 2.9,
       categories: ['Haircuts', 'Manicure'],
     ),
-    const Salon(
+    Salon(
       id: '3',
       name: 'Glamour Studio',
       address: '1234 Beauty Avenue',
@@ -87,7 +87,7 @@ class _HomeScreenState extends State<HomeScreen> {
       distance: 1.8,
       categories: ['Make up', 'Massage'],
     ),
-    const Salon(
+    Salon(
       id: '4',
       name: 'Relaxation Spa',
       address: '5678 Wellness Street',
@@ -96,7 +96,7 @@ class _HomeScreenState extends State<HomeScreen> {
       distance: 3.2,
       categories: ['Massage', 'Manicure'],
     ),
-    const Salon(
+    Salon(
       id: '5',
       name: 'Perfect Nails',
       address: '9876 Style Boulevard',
@@ -105,7 +105,7 @@ class _HomeScreenState extends State<HomeScreen> {
       distance: 0.8,
       categories: ['Manicure'],
     ),
-    const Salon(
+    Salon(
       id: '6',
       name: 'Hair & Beyond',
       address: '4321 Fashion Lane',
